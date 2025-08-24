@@ -163,15 +163,20 @@ const Video = ({
   setMute,
   playingVideo,
   setPlayingVideo,
+  autoplay = false, // Thêm prop mới với default là false
 }: {
   video: VideoType;
   mute: boolean;
   setMute: React.Dispatch<React.SetStateAction<boolean>>;
   playingVideo: string | null;
   setPlayingVideo: React.Dispatch<React.SetStateAction<string | null>>;
+  autoplay?: boolean; // Prop mới optional
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [play, setPlay] = useState(video.postId === playingVideo);
+  // State "play" phụ thuộc xem video này có đang được chọn play hay không
+  const [play, setPlay] = useState(
+    autoplay || video.postId === playingVideo
+  );
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
 
@@ -195,7 +200,12 @@ const Video = ({
     toast.success("Comment feature coming soon!");
   };
 
-  // Auto play/pause based on visibility
+  // Khi prop playingVideo hoặc autoplay thay đổi, cập nhật lại trạng thái play
+  useEffect(() => {
+    setPlay(autoplay || video.postId === playingVideo);
+  }, [playingVideo, video.postId, autoplay]);
+
+  // Dùng IntersectionObserver để tự động chuyển video đang phát khi video này được scroll vào vùng hiển thị (threshold 0.5)
   useEffect(() => {
     const currentVideo = videoRef.current;
     if (!currentVideo) return;
@@ -203,11 +213,8 @@ const Video = ({
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.target.id !== playingVideo) {
-            setPlay(true);
+          if (entry.isIntersecting) {
             setPlayingVideo(entry.target.id);
-          } else if (!entry.isIntersecting) {
-            setPlay(false);
           }
         });
       },
@@ -221,26 +228,26 @@ const Video = ({
     return () => {
       observer.unobserve(currentVideo);
     };
-  }, [playingVideo, setPlayingVideo]);
+  }, [setPlayingVideo]);
 
-  // Ensure safe playback (fix AbortError)
+  // Điều khiển play/pause video dựa trên state "play"
   useEffect(() => {
     const videoEl = videoRef.current;
     if (!videoEl) return;
 
-    const handlePlayback = async () => {
+    const playPause = async () => {
       try {
-        if (play && videoEl.paused) {
-          await videoEl.play();
-        } else if (!play && !videoEl.paused) {
-          videoEl.pause();
+        if (play) {
+          if (videoEl.paused) await videoEl.play();
+        } else {
+          if (!videoEl.paused) videoEl.pause();
         }
       } catch (error) {
         console.warn("Playback error:", error);
       }
     };
 
-    handlePlayback();
+    playPause();
   }, [play]);
 
   return (
@@ -252,12 +259,12 @@ const Video = ({
           poster={video.submission.thumbnail}
           id={video.postId}
           loop
-          autoPlay={play}
           muted={mute}
           playsInline
           onClick={(e) => {
             e.stopPropagation();
-            setPlay(!play);
+            setPlay((prev) => !prev);
+            if (!play) setPlayingVideo(video.postId);
           }}
         />
         <div className="video-actions">
@@ -276,6 +283,7 @@ const Video = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   setPlay(true);
+                  setPlayingVideo(video.postId);
                 }}
               >
                 <IoMdPlay />

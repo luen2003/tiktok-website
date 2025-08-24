@@ -4,7 +4,6 @@ import Video from "./Video";
 import type { VideoType } from "../../types/Video";
 import { styled } from "styled-components";
 import { toast } from "react-hot-toast";
-import InfiniteScroll from "react-infinite-scroll-component";
 
 type ApiResponseType = {
   data: {
@@ -16,92 +15,103 @@ const VideoListStyled = styled.div`
   display: grid;
   place-items: center;
   min-height: 100vh;
+
   .video-list {
     display: grid;
     place-items: center;
     gap: 1rem;
     scroll-snap-type: y mandatory;
-    overflow-y: scroll;
-    max-height: calc(100vh + 1rem);
+    overflow-y: auto;
+    max-height: 100vh;
+    width: 100%;
+
     @media (min-width: 768px) {
-      & {
-        gap: 2rem;
-      }
+      gap: 2rem;
     }
+
     & > div:first-child {
       margin-top: 1rem;
     }
+
     & .video {
       scroll-snap-align: center;
+      width: 100%;
+      max-width: 400px;
     }
+  }
+
+  .loader,
+  .end-message {
+    text-align: center;
+    margin: 1rem 0;
   }
 `;
 
-const InfiniteScrollAny = InfiniteScroll as any;
-
 const VideoList = () => {
   const [videos, setVideos] = useState<VideoType[]>([]);
-  const [playingVideo, setPlayingVideo] = useState<string | null>(null);
-  const [page, setPage] = useState<number>(0);
-  const [mute, setMute] = useState<boolean>(true);
+  const [page, setPage] = useState(0);
+  const [mute, setMute] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
   const getVideos = async (currentPage: number) => {
+    setLoading(true);
     try {
       const res: AxiosResponse<ApiResponseType> = await axios.get(
         `https://tiktok-video-api.onrender.com/videos?page=${currentPage}`
       );
-      setVideos((prevVideos) => {
-        const filteredVideos = res.data.data.posts.filter(
-          (video) => !prevVideos.some((v) => v.postId === video.postId)
-        );
-        return [...prevVideos, ...filteredVideos];
-      });
-    } catch (err: unknown) {
-      console.log(err);
+      const newVideos = res.data.data.posts.filter(
+        (video) => !videos.some((v) => v.postId === video.postId)
+      );
+      if (newVideos.length === 0) {
+        setHasMore(false);
+      } else {
+        setVideos((prev) => [...prev, ...newVideos]);
+      }
+    } catch (error) {
       toast.error("Something went wrong!");
+      setHasMore(false);
     }
+    setLoading(false);
   };
 
   useEffect(() => {
     getVideos(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
-  useEffect(() => {
-    setPlayingVideo(videos?.length ? videos[0].postId : null);
-  }, [videos]);
-
-  const handleNextPage = () => {
-    setPage((prevPage) => prevPage + 1);
+  // Khi scroll tới cuối, load thêm
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    if (
+      hasMore &&
+      !loading &&
+      target.scrollHeight - target.scrollTop <= target.clientHeight + 100
+    ) {
+      setPage((prev) => prev + 1);
+    }
   };
 
   return (
-    <VideoListStyled className="container">
+    <VideoListStyled>
       {videos.length ? (
-        <InfiniteScrollAny
-          dataLength={videos.length}
-          next={handleNextPage}
-          hasMore={true}
-          loader={<span className="loader"></span>}
-          endMessage={<p className="end-message">You have reached the end!</p>}
-          onScroll={() => {
-            scrollBy(0, -1);
-          }}
-          className="video-list"
-        >
-          {playingVideo &&
-            videos.map((video) => (
-              <Video
-                key={video.postId}
-                video={video}
-                mute={mute}
-                setMute={setMute}
-                playingVideo={playingVideo}
-                setPlayingVideo={setPlayingVideo}
-              />
-            ))}
-        </InfiniteScrollAny>
+        <div className="video-list" onScroll={handleScroll}>
+          {videos.map((video) => (
+            <Video
+              key={video.postId}
+              video={video}
+              mute={mute}
+              setMute={setMute}
+              playingVideo={null} // Không cần quản lý riêng, autoplay tất cả
+              setPlayingVideo={() => {}} // Không dùng
+              // xóa prop autoplay đi vì Video không nhận
+            />
+          ))}
+          {loading && <span className="loader">Loading...</span>}
+          {!hasMore && <p className="end-message">You have reached the end!</p>}
+        </div>
       ) : (
-        <span className="loader"></span>
+        <span className="loader">Loading videos...</span>
       )}
     </VideoListStyled>
   );

@@ -19,6 +19,7 @@ const VideoStyled = styled.div`
   cursor: pointer;
   gap: 1rem;
   height: calc(100vh - 2rem);
+
   .video {
     height: 100%;
     aspect-ratio: 9 / 16;
@@ -26,10 +27,12 @@ const VideoStyled = styled.div`
     border-radius: 1rem;
     max-width: calc(100vw - 2.5rem);
     overflow: hidden;
+
     video {
       height: 100%;
       object-fit: cover;
     }
+
     .video-actions {
       position: absolute;
       top: 0;
@@ -40,6 +43,7 @@ const VideoStyled = styled.div`
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
+
       button {
         border-radius: 50%;
         width: 2.5rem;
@@ -49,15 +53,18 @@ const VideoStyled = styled.div`
         justify-content: center;
         color: rgb(var(--light-color));
         transition: 0.15s;
+
         &:hover {
           background: rgb(var(--light-color) / 0.25);
         }
+
         svg {
           width: 1.5rem;
           height: 1.5rem;
         }
       }
     }
+
     .video-details {
       position: absolute;
       bottom: 0;
@@ -72,6 +79,7 @@ const VideoStyled = styled.div`
       flex-direction: column;
       justify-content: flex-end;
       gap: 0.75rem;
+
       p {
         font-size: 0.9rem;
         color: rgb(var(--light-color));
@@ -80,16 +88,19 @@ const VideoStyled = styled.div`
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
+
       .creator-details {
         display: flex;
         align-items: center;
         gap: 1rem;
+
         img {
           width: 2.25rem;
           height: 2.25rem;
           border-radius: 50%;
           object-fit: cover;
         }
+
         button {
           padding: 0.25rem 0.5rem;
           border-radius: 0.25rem;
@@ -98,6 +109,7 @@ const VideoStyled = styled.div`
         }
       }
     }
+
     .buttons {
       position: absolute;
       bottom: 0;
@@ -106,24 +118,22 @@ const VideoStyled = styled.div`
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      & > div {
-        & span {
-          display: block;
-          font-size: 0.75rem;
-          color: rgb(var(--light-color));
-          text-align: center;
-        }
-        &.like {
-          & button.liked {
-            color: rgb(var(--like-color));
-          }
-        }
-        &.dislike {
-          & button.disliked {
-            color: rgb(var(--primary-color));
-          }
-        }
+
+      & > div span {
+        display: block;
+        font-size: 0.75rem;
+        color: rgb(var(--light-color));
+        text-align: center;
       }
+
+      .like button.liked {
+        color: rgb(var(--like-color));
+      }
+
+      .dislike button.disliked {
+        color: rgb(var(--primary-color));
+      }
+
       button {
         border-radius: 50%;
         width: 3rem;
@@ -133,9 +143,11 @@ const VideoStyled = styled.div`
         justify-content: center;
         color: rgb(var(--light-color));
         transition: 0.15s;
+
         &:hover {
           background: rgb(var(--light-color) / 0.25);
         }
+
         svg {
           width: 1.5rem;
           height: 1.5rem;
@@ -160,41 +172,42 @@ const Video = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [play, setPlay] = useState(video.postId === playingVideo);
-  const [liked, setLiked] = useState<boolean>(false);
-  const [disliked, setDisliked] = useState<boolean>(false);
+  const [liked, setLiked] = useState(false);
+  const [disliked, setDisliked] = useState(false);
+
   const handleLike = () => {
     setDisliked(false);
-    setLiked((prevLiked) => !prevLiked);
+    setLiked((prev) => !prev);
   };
+
   const handleDislike = () => {
     setLiked(false);
-    setDisliked((prevDisliked) => !prevDisliked);
+    setDisliked((prev) => !prev);
     toast.success("Thank you for your feedback!");
   };
+
   const handleShare = () => {
     navigator.clipboard.writeText(video.submission.mediaUrl);
     toast.success("Video link copied to clipboard!");
   };
+
   const handleComment = () => {
     toast.success("Comment feature coming soon!");
   };
+
+  // Auto play/pause based on visibility
   useEffect(() => {
-    const currentVideoRef = videoRef.current;
+    const currentVideo = videoRef.current;
+    if (!currentVideo) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (
-            entry.isIntersecting &&
-            entry.target.id !== playingVideo &&
-            (entry.target as HTMLVideoElement)?.paused
-          ) {
+          if (entry.isIntersecting && entry.target.id !== playingVideo) {
             setPlay(true);
             setPlayingVideo(entry.target.id);
-            return;
-          }
-          if (!entry.isIntersecting) {
+          } else if (!entry.isIntersecting) {
             setPlay(false);
-            return;
           }
         });
       },
@@ -202,22 +215,34 @@ const Video = ({
         threshold: 0.5,
       }
     );
-    if (currentVideoRef) {
-      observer.observe(currentVideoRef);
-    }
+
+    observer.observe(currentVideo);
+
     return () => {
-      if (currentVideoRef) {
-        observer.unobserve(currentVideoRef);
-      }
+      observer.unobserve(currentVideo);
     };
   }, [playingVideo, setPlayingVideo]);
+
+  // Ensure safe playback (fix AbortError)
   useEffect(() => {
-    if (play) {
-      videoRef.current?.play();
-      return;
-    }
-    videoRef.current?.pause();
+    const videoEl = videoRef.current;
+    if (!videoEl) return;
+
+    const handlePlayback = async () => {
+      try {
+        if (play && videoEl.paused) {
+          await videoEl.play();
+        } else if (!play && !videoEl.paused) {
+          videoEl.pause();
+        }
+      } catch (error) {
+        console.warn("Playback error:", error);
+      }
+    };
+
+    handlePlayback();
   }, [play]);
+
   return (
     <VideoStyled>
       <div className="video selected">
@@ -226,21 +251,21 @@ const Video = ({
           src={video.submission.mediaUrl}
           poster={video.submission.thumbnail}
           id={video.postId}
-          autoFocus
+          loop
           autoPlay={play}
-          loop={video.postId === playingVideo}
-          onClick={(event) => {
-            event.stopPropagation();
+          muted={mute}
+          playsInline
+          onClick={(e) => {
+            e.stopPropagation();
             setPlay(!play);
           }}
-          muted={mute}
         />
         <div className="video-actions">
           <div className="play-pause">
             {play ? (
               <button
-                onClick={(event) => {
-                  event.stopPropagation();
+                onClick={(e) => {
+                  e.stopPropagation();
                   setPlay(false);
                 }}
               >
@@ -248,8 +273,8 @@ const Video = ({
               </button>
             ) : (
               <button
-                onClick={(event) => {
-                  event.stopPropagation();
+                onClick={(e) => {
+                  e.stopPropagation();
                   setPlay(true);
                 }}
               >
@@ -260,8 +285,8 @@ const Video = ({
           <div className="volume">
             {mute ? (
               <button
-                onClick={(event) => {
-                  event.stopPropagation();
+                onClick={(e) => {
+                  e.stopPropagation();
                   setMute(false);
                 }}
               >
@@ -269,8 +294,8 @@ const Video = ({
               </button>
             ) : (
               <button
-                onClick={(event) => {
-                  event.stopPropagation();
+                onClick={(e) => {
+                  e.stopPropagation();
                   setMute(true);
                 }}
               >
@@ -279,6 +304,7 @@ const Video = ({
             )}
           </div>
         </div>
+
         <div className="video-details">
           <div className="creator-details">
             <img src={video.creator.pic} alt={video.creator.name} />
@@ -288,12 +314,12 @@ const Video = ({
           <p>{video.submission.title}</p>
           <p>{video.submission.description}</p>
         </div>
+
         <div className="buttons">
           <div className="like">
             <button
               title="I like this"
               onClick={handleLike}
-              aria-label="I like this"
               className={`like-button ${liked ? "liked" : ""}`}
             >
               <FaThumbsUp />
@@ -306,29 +332,27 @@ const Video = ({
                 : "Like"}
             </span>
           </div>
+
           <div className="dislike">
             <button
               title="I dislike this"
               onClick={handleDislike}
-              aria-label="I dislike this"
               className={`dislike-button ${disliked ? "disliked" : ""}`}
             >
               <FaThumbsDown />
             </button>
             <span>Dislike</span>
           </div>
+
           <div className="comment">
-            <button
-              title="Comment"
-              aria-label="Comment"
-              onClick={handleComment}
-            >
+            <button title="Comment" onClick={handleComment}>
               <MdInsertComment />
             </button>
             <span>0</span>
           </div>
+
           <div className="share">
-            <button title="Share" onClick={handleShare} aria-label="Share">
+            <button title="Share" onClick={handleShare}>
               <RiShareForwardFill />
             </button>
             <span>Share</span>

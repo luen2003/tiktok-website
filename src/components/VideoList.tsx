@@ -37,6 +37,8 @@ const VideoListStyled = styled.div`
   }
 `;
 
+const InfiniteScrollAny = InfiniteScroll as any;
+
 const VideoList = () => {
   const [videos, setVideos] = useState<VideoType[]>([]);
   const [playingVideo, setPlayingVideo] = useState<string | null>(null);
@@ -67,13 +69,15 @@ const VideoList = () => {
   useEffect(() => {
     setPlayingVideo(videos?.length ? videos[0].postId : null);
   }, [videos]);
+
   const handleNextPage = () => {
     setPage((prevPage) => prevPage + 1);
   };
+
   return (
     <VideoListStyled className="container">
       {videos.length ? (
-        <InfiniteScroll
+        <InfiniteScrollAny
           dataLength={videos.length}
           next={handleNextPage}
           hasMore={true}
@@ -95,7 +99,7 @@ const VideoList = () => {
                 setPlayingVideo={setPlayingVideo}
               />
             ))}
-        </InfiniteScroll>
+        </InfiniteScrollAny>
       ) : (
         <span className="loader"></span>
       )}

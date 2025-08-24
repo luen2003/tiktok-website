@@ -111,7 +111,7 @@ const VideoList = () => {
           {!hasMore && <p className="end-message">You have reached the end!</p>}
         </div>
       ) : (
-        <span className="loader">Loading videos...</span>
+        <span className="loader"></span>
       )}
     </VideoListStyled>
   );

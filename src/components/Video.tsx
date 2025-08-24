@@ -163,7 +163,7 @@ const Video = ({
   setMute,
   playingVideo,
   setPlayingVideo,
-  autoplay = false, // Thêm prop mới với default là false
+  autoplay = true,
 }: {
   video: VideoType;
   mute: boolean;

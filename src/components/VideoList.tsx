@@ -106,7 +106,7 @@ const VideoList = () => {
             />
           ))}
           {loading && <span className="loader">Loading...</span>}
-          {!hasMore && <p className="end-message">You have reached the end!</p>}
+          {!hasMore && <p className="end-message"></p>}
         </div>
       ) : (
         <span className="loader"></span>

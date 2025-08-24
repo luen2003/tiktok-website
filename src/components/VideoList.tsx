@@ -80,7 +80,6 @@ const VideoList = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
-  // Khi scroll tới cuối, load thêm
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
     if (
@@ -102,9 +101,8 @@ const VideoList = () => {
               video={video}
               mute={mute}
               setMute={setMute}
-              playingVideo={null} // Không cần quản lý riêng, autoplay tất cả
-              setPlayingVideo={() => {}} // Không dùng
-              // xóa prop autoplay đi vì Video không nhận
+              playingVideo={null} 
+              setPlayingVideo={() => {}} 
             />
           ))}
           {loading && <span className="loader">Loading...</span>}

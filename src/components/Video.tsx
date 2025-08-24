@@ -170,10 +170,9 @@ const Video = ({
   setMute: React.Dispatch<React.SetStateAction<boolean>>;
   playingVideo: string | null;
   setPlayingVideo: React.Dispatch<React.SetStateAction<string | null>>;
-  autoplay?: boolean; // Prop mới optional
+  autoplay?: boolean; 
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  // State "play" phụ thuộc xem video này có đang được chọn play hay không
   const [play, setPlay] = useState(
     autoplay || video.postId === playingVideo
   );
@@ -200,12 +199,10 @@ const Video = ({
     toast.success("Comment feature coming soon!");
   };
 
-  // Khi prop playingVideo hoặc autoplay thay đổi, cập nhật lại trạng thái play
   useEffect(() => {
     setPlay(autoplay || video.postId === playingVideo);
   }, [playingVideo, video.postId, autoplay]);
 
-  // Dùng IntersectionObserver để tự động chuyển video đang phát khi video này được scroll vào vùng hiển thị (threshold 0.5)
   useEffect(() => {
     const currentVideo = videoRef.current;
     if (!currentVideo) return;
@@ -230,7 +227,6 @@ const Video = ({
     };
   }, [setPlayingVideo]);
 
-  // Điều khiển play/pause video dựa trên state "play"
   useEffect(() => {
     const videoEl = videoRef.current;
     if (!videoEl) return;

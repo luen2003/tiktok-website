@@ -1,6 +1,10 @@
+import { useEffect, useState } from "react";
+import axios, { AxiosResponse } from "axios";
+import Video from "./Video";
+import type { VideoType } from "../../types/Video";
+import { styled } from "styled-components";
+import { toast } from "react-hot-toast";
 
-<<<<<<< HEAD
-=======
 type ApiResponseType = {
   data: {
     posts: VideoType[];
@@ -114,5 +118,3 @@ const VideoList = () => {
 };
 
 export default VideoList;
-
->>>>>>> 3f78da125b08d1b81ff455e48b68cd93a6573aea

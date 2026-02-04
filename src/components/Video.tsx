@@ -15,21 +15,29 @@ import { toast } from "react-hot-toast";
 const VideoStyled = styled.div`
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  cursor: pointer;
-  gap: 1rem;
+  justify-content: center;
   height: calc(100vh - 2rem);
+
   .video {
-    height: 100%;
-    aspect-ratio: 9 / 16;
     position: relative;
+    width: 100%;
+    max-width: 420px;
+    height: 100%;
     border-radius: 1rem;
-    max-width: calc(100vw - 2.5rem);
     overflow: hidden;
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     video {
+      width: 100%;
       height: 100%;
-      object-fit: cover;
+      max-height: 100%;
+      object-fit: contain;
+      background: black;
     }
+
     .video-actions {
       position: absolute;
       top: 0;
@@ -37,31 +45,34 @@ const VideoStyled = styled.div`
       right: 0;
       padding: 0.5rem;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 1rem;
+      z-index: 2;
+
       button {
-        border-radius: 50%;
         width: 2.5rem;
         height: 2.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
         color: rgb(var(--light-color));
         transition: 0.15s;
+
         &:hover {
           background: rgb(var(--light-color) / 0.25);
         }
+
         svg {
           width: 1.5rem;
           height: 1.5rem;
         }
       }
     }
+
     .video-details {
       position: absolute;
       bottom: 0;
       left: 0;
+      right: 0;
       padding: 0 3rem 1rem 1rem;
       background: linear-gradient(
         0deg,
@@ -70,34 +81,38 @@ const VideoStyled = styled.div`
       );
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
       gap: 0.75rem;
+      z-index: 2;
+
       p {
         font-size: 0.9rem;
-        color: rgb(var(--light-color));
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
+
       .creator-details {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 0.75rem;
+
         img {
           width: 2.25rem;
           height: 2.25rem;
           border-radius: 50%;
           object-fit: cover;
         }
+
         button {
           padding: 0.25rem 0.5rem;
-          border-radius: 0.25rem;
           font-size: 0.8rem;
+          border-radius: 0.25rem;
           background: rgb(var(--primary-color));
         }
       }
     }
+
     .buttons {
       position: absolute;
       bottom: 0;
@@ -106,36 +121,37 @@ const VideoStyled = styled.div`
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      & > div {
-        & span {
-          display: block;
+      z-index: 2;
+
+      > div {
+        text-align: center;
+
+        span {
           font-size: 0.75rem;
-          color: rgb(var(--light-color));
-          text-align: center;
         }
-        &.like {
-          & button.liked {
-            color: rgb(var(--like-color));
-          }
+
+        &.like button.liked {
+          color: rgb(var(--like-color));
         }
-        &.dislike {
-          & button.disliked {
-            color: rgb(var(--primary-color));
-          }
+
+        &.dislike button.disliked {
+          color: rgb(var(--primary-color));
         }
       }
+
       button {
-        border-radius: 50%;
         width: 3rem;
         height: 3rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
         color: rgb(var(--light-color));
         transition: 0.15s;
+
         &:hover {
           background: rgb(var(--light-color) / 0.25);
         }
+
         svg {
           width: 1.5rem;
           height: 1.5rem;
@@ -160,175 +176,108 @@ const Video = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [play, setPlay] = useState(video.postId === playingVideo);
-  const [liked, setLiked] = useState<boolean>(false);
-  const [disliked, setDisliked] = useState<boolean>(false);
-  const handleLike = () => {
-    setDisliked(false);
-    setLiked((prevLiked) => !prevLiked);
-  };
-  const handleDislike = () => {
-    setLiked(false);
-    setDisliked((prevDisliked) => !prevDisliked);
-    toast.success("Thank you for your feedback!");
-  };
-  const handleShare = () => {
-    navigator.clipboard.writeText(video.submission.mediaUrl);
-    toast.success("Video link copied to clipboard!");
-  };
-  const handleComment = () => {
-    toast.success("Comment feature coming soon!");
-  };
+  const [liked, setLiked] = useState(false);
+  const [disliked, setDisliked] = useState(false);
+
   useEffect(() => {
-    const currentVideoRef = videoRef.current;
+    const el = videoRef.current;
+    if (!el) return;
+
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (
-            entry.isIntersecting &&
-            entry.target.id !== playingVideo &&
-            (entry.target as HTMLVideoElement)?.paused
-          ) {
-            setPlay(true);
-            setPlayingVideo(entry.target.id);
-            return;
-          }
-          if (!entry.isIntersecting) {
-            setPlay(false);
-            return;
-          }
-        });
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setPlay(true);
+          setPlayingVideo(el.id);
+        } else {
+          setPlay(false);
+        }
       },
-      {
-        threshold: 0.5,
-      }
+      { threshold: 0.6 }
     );
-    if (currentVideoRef) {
-      observer.observe(currentVideoRef);
-    }
-    return () => {
-      if (currentVideoRef) {
-        observer.unobserve(currentVideoRef);
-      }
-    };
-  }, [playingVideo, setPlayingVideo]);
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [setPlayingVideo]);
+
   useEffect(() => {
-    if (play) {
-      videoRef.current?.play();
-      return;
-    }
-    videoRef.current?.pause();
+    play ? videoRef.current?.play() : videoRef.current?.pause();
   }, [play]);
+
   return (
     <VideoStyled>
-      <div className="video selected">
+      <div className="video">
         <video
           ref={videoRef}
+          id={video.postId}
           src={video.submission.mediaUrl}
           poster={video.submission.thumbnail}
-          id={video.postId}
-          autoFocus
-          autoPlay={play}
-          loop={video.postId === playingVideo}
-          onClick={(event) => {
-            event.stopPropagation();
-            setPlay(!play);
-          }}
           muted={mute}
+          loop
+          playsInline
+          onClick={() => setPlay(!play)}
         />
+
         <div className="video-actions">
-          <div className="play-pause">
-            {play ? (
-              <button
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setPlay(false);
-                }}
-              >
-                <IoMdPause />
-              </button>
-            ) : (
-              <button
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setPlay(true);
-                }}
-              >
-                <IoMdPlay />
-              </button>
-            )}
-          </div>
-          <div className="volume">
-            {mute ? (
-              <button
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setMute(false);
-                }}
-              >
-                <IoMdVolumeOff />
-              </button>
-            ) : (
-              <button
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setMute(true);
-                }}
-              >
-                <IoMdVolumeHigh />
-              </button>
-            )}
-          </div>
+          <button onClick={() => setPlay(!play)}>
+            {play ? <IoMdPause /> : <IoMdPlay />}
+          </button>
+          <button onClick={() => setMute(!mute)}>
+            {mute ? <IoMdVolumeOff /> : <IoMdVolumeHigh />}
+          </button>
         </div>
+
         <div className="video-details">
           <div className="creator-details">
-            <img src={video.creator.pic} alt={video.creator.name} />
+            <img src={video.creator.pic} />
             <p>{video.creator.name}</p>
             <button>Subscribe</button>
           </div>
           <p>{video.submission.title}</p>
           <p>{video.submission.description}</p>
         </div>
+
         <div className="buttons">
           <div className="like">
             <button
-              title="I like this"
-              onClick={handleLike}
-              aria-label="I like this"
-              className={`like-button ${liked ? "liked" : ""}`}
+              className={liked ? "liked" : ""}
+              onClick={() => {
+                setDisliked(false);
+                setLiked(!liked);
+              }}
             >
               <FaThumbsUp />
             </button>
-            <span>
-              {video.reaction.count > 0
-                ? liked
-                  ? video.reaction.count + 1
-                  : video.reaction.count
-                : "Like"}
-            </span>
+            <span>{liked ? video.reaction.count + 1 : video.reaction.count}</span>
           </div>
+
           <div className="dislike">
             <button
-              title="I dislike this"
-              onClick={handleDislike}
-              aria-label="I dislike this"
-              className={`dislike-button ${disliked ? "disliked" : ""}`}
+              className={disliked ? "disliked" : ""}
+              onClick={() => {
+                setLiked(false);
+                setDisliked(!disliked);
+                toast.success("Thank you for your feedback!");
+              }}
             >
               <FaThumbsDown />
             </button>
             <span>Dislike</span>
           </div>
-          <div className="comment">
-            <button
-              title="Comment"
-              aria-label="Comment"
-              onClick={handleComment}
-            >
+
+          <div>
+            <button onClick={() => toast.success("Coming soon!")}>
               <MdInsertComment />
             </button>
             <span>0</span>
           </div>
-          <div className="share">
-            <button title="Share" onClick={handleShare} aria-label="Share">
+
+          <div>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(video.submission.mediaUrl);
+                toast.success("Copied!");
+              }}
+            >
               <RiShareForwardFill />
             </button>
             <span>Share</span>

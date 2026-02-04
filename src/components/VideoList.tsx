@@ -84,7 +84,7 @@ const VideoList = () => {
           }}
           className="video-list"
         >
-          {playingVideo &&
+          {
             videos.map((video) => (
               <Video
                 key={video.postId}

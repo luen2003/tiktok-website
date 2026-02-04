@@ -175,7 +175,7 @@ const Video = ({
   setPlayingVideo: React.Dispatch<React.SetStateAction<string | null>>;
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [play, setPlay] = useState(video.postId === playingVideo);
+  const [play, setPlay] = useState(false);
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
 

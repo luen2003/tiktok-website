@@ -195,6 +195,15 @@ const Video = ({
       { threshold: 0.6 }
     );
 
+    useEffect(() => {
+  if (playingVideo === video.postId) {
+    setPlay(true);
+  } else {
+    setPlay(false);
+  }
+}, [playingVideo, video.postId]);
+
+
     observer.observe(el);
     return () => observer.disconnect();
   }, [setPlayingVideo]);

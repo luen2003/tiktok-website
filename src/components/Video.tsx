@@ -58,7 +58,7 @@ const VideoStyled = styled.div`
         transition: 0.15s;
 
         &:hover {
-          background: rgb(var(--light-color) / 0.25);
+          background: rgba(0, 0, 0, 0.6);
         }
 
         svg {
@@ -85,7 +85,7 @@ const VideoStyled = styled.div`
       z-index: 2;
 
       p {
-        font-size: 0.9rem;
+        font-size: 0.6rem;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
@@ -149,7 +149,7 @@ const VideoStyled = styled.div`
         transition: 0.15s;
 
         &:hover {
-          background: rgb(var(--light-color) / 0.25);
+          background: rgba(0, 0, 0, 0.6);
         }
 
         svg {
@@ -161,22 +161,19 @@ const VideoStyled = styled.div`
   }
     .buttons {
   button {
-    color: rgba(0, 0, 0, 0.9);
+    color: rgba(0, 0, 0, 0.6);
   }
-&:hover {
-  background: rgba(0, 0, 0, 0.6);
-}
 
 }
 .buttons {
   button {
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
     color: white;
   }
 
   button:hover {
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.6);
   }
 }
 .buttons {
@@ -198,7 +195,7 @@ const VideoStyled = styled.div`
       font-size: 0.7rem;
       color: white;
 
-      background: rgba(0, 0, 0, 0.9);
+      background: rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(4px);
 
       border-radius: 999px;
@@ -243,7 +240,6 @@ const Video = ({
 
   const observer = new IntersectionObserver(
     ([entry]) => {
-      // ⛔ nếu user đã pause thì KHÔNG auto play
       if (userPaused) return;
 
       if (entry.isIntersecting && playingVideo !== el.id) {

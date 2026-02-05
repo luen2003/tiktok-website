@@ -42,6 +42,41 @@ const VideoList = () => {
   const [playingVideo, setPlayingVideo] = useState<string | null>(null);
   const [page, setPage] = useState<number>(0);
   const [mute, setMute] = useState<boolean>(true);
+useEffect(() => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (!playingVideo) return;
+
+    const currentIndex = videos.findIndex(
+      (v) => v.postId === playingVideo
+    );
+
+    if (currentIndex === -1) return;
+
+    let nextIndex = currentIndex;
+
+    if (e.key === "ArrowDown") {
+      nextIndex = Math.min(currentIndex + 1, videos.length - 1);
+    }
+
+    if (e.key === "ArrowUp") {
+      nextIndex = Math.max(currentIndex - 1, 0);
+    }
+
+    if (nextIndex !== currentIndex) {
+      const nextVideo = videos[nextIndex];
+      setPlayingVideo(nextVideo.postId);
+
+      const el = document.getElementById(nextVideo.postId);
+      el?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [videos, playingVideo]);
 
   const getVideos = async (currentPage: number) => {
     try {

@@ -269,8 +269,16 @@ const Video = ({
   const [disliked, setDisliked] = useState(false);
   const isPlaying = playingVideo === video.postId;
   const [userPaused, setUserPaused] = useState(false);
-const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const descRef = useRef<HTMLParagraphElement>(null);
+  const [canExpand, setCanExpand] = useState(false);
 
+  useEffect(() => {
+    const el = descRef.current;
+    if (!el) return;
+
+    setCanExpand(el.scrollHeight > el.clientHeight);
+  }, [video.submission.description]);
 
   useEffect(() => {
     if (!videoRef.current) return;
@@ -280,24 +288,24 @@ const [expanded, setExpanded] = useState(false);
   }, [isPlaying]);
 
   useEffect(() => {
-  const el = videoRef.current;
-  if (!el) return;
+    const el = videoRef.current;
+    if (!el) return;
 
-  const observer = new IntersectionObserver(
-    ([entry]) => {
-      if (userPaused) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (userPaused) return;
 
-      if (entry.isIntersecting && playingVideo !== el.id) {
-        el.play().catch(() => {});
-        setPlayingVideo(el.id);
-      }
-    },
-    { threshold: 0.6 }
-  );
+        if (entry.isIntersecting && playingVideo !== el.id) {
+          el.play().catch(() => { });
+          setPlayingVideo(el.id);
+        }
+      },
+      { threshold: 0.6 }
+    );
 
-  observer.observe(el);
-  return () => observer.disconnect();
-}, [playingVideo, setPlayingVideo, userPaused]);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [playingVideo, setPlayingVideo, userPaused]);
 
 
   //  useEffect(() => {
@@ -330,19 +338,19 @@ const [expanded, setExpanded] = useState(false);
         />
 
         <div className="video-actions">
-<button
-  onClick={() => {
-    if (isPlaying) {
-      setUserPaused(true);
-      setPlayingVideo(null);
-    } else {
-      setUserPaused(false);
-      setPlayingVideo(video.postId);
-    }
-  }}
->
-  {isPlaying ? <IoMdPause /> : <IoMdPlay />}
-</button>
+          <button
+            onClick={() => {
+              if (isPlaying) {
+                setUserPaused(true);
+                setPlayingVideo(null);
+              } else {
+                setUserPaused(false);
+                setPlayingVideo(video.postId);
+              }
+            }}
+          >
+            {isPlaying ? <IoMdPause /> : <IoMdPlay />}
+          </button>
 
           <button onClick={() => setMute(!mute)}>
             {mute ? <IoMdVolumeOff /> : <IoMdVolumeHigh />}
@@ -364,16 +372,21 @@ const [expanded, setExpanded] = useState(false);
   {expanded ? "Ẩn đi" : "Hiển thị thêm"}
 </button> */}
           <div className={`description ${expanded ? "expanded" : ""}`}>
-  <p className="title">{video.submission.title}</p>
-  <p className="text">{video.submission.description}</p>
-</div>
+            <p className="title">{video.submission.title}</p>
+            <p ref={descRef} className="text">
+              {video.submission.description}
+            </p>
+          </div>
+          {canExpand && (
+            <button
+              className="toggle-desc"
+              onClick={() => setExpanded(!expanded)}
+            >
+              {expanded ? "Ẩn đi" : "Hiển thị thêm"}
+            </button>
+          )}
 
-<button
-  className="toggle-desc"
-  onClick={() => setExpanded(!expanded)}
->
-  {expanded ? "Ẩn đi" : "Hiển thị thêm"}
-</button>
+
 
         </div>
 

@@ -270,7 +270,6 @@ const Video = ({
   const isPlaying = playingVideo === video.postId;
   const [userPaused, setUserPaused] = useState(false);
 const [expanded, setExpanded] = useState(false);
-const descRef = useRef<HTMLDivElement>(null);
 
 
   useEffect(() => {

@@ -204,6 +204,49 @@ const VideoStyled = styled.div`
     }
   }
 }
+  .video-details {
+  .description {
+    font-size: 0.65rem;
+
+    .title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .text {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    &.expanded {
+      max-height: 5rem; /* chiều cao cố định */
+      overflow-y: auto;
+
+      .text {
+        display: block;
+        -webkit-line-clamp: unset;
+      }
+    }
+  }
+
+  .toggle-desc {
+    align-self: flex-start;
+    font-size: 0.6rem;
+    color: #fff;
+    opacity: 0.8;
+    background: none;
+    padding: 0;
+    margin-top: -0.25rem;
+
+    &:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+  }
+}
+
 
 `;
 
@@ -226,6 +269,9 @@ const Video = ({
   const [disliked, setDisliked] = useState(false);
   const isPlaying = playingVideo === video.postId;
   const [userPaused, setUserPaused] = useState(false);
+const [expanded, setExpanded] = useState(false);
+const descRef = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
     if (!videoRef.current) return;
@@ -310,8 +356,26 @@ const Video = ({
             <p>{video.creator.name}</p>
             <button>Subscribe</button>
           </div>
-          <p>{video.submission.title}</p>
-          <p>{video.submission.description}</p>
+          {/* <p>{video.submission.title}</p>
+          <p>{video.submission.description}</p> */}
+          {/* <button
+  className="toggle-desc"
+  onClick={() => setExpanded(!expanded)}
+>
+  {expanded ? "Ẩn đi" : "Hiển thị thêm"}
+</button> */}
+          <div className={`description ${expanded ? "expanded" : ""}`}>
+  <p className="title">{video.submission.title}</p>
+  <p className="text">{video.submission.description}</p>
+</div>
+
+<button
+  className="toggle-desc"
+  onClick={() => setExpanded(!expanded)}
+>
+  {expanded ? "Ẩn đi" : "Hiển thị thêm"}
+</button>
+
         </div>
 
         <div className="buttons">

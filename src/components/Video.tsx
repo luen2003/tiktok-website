@@ -287,7 +287,7 @@ useEffect(() => {
 
   const lineCount = rects.length;
 
-  setCanExpand(lineCount >= 3);
+  setCanExpand(lineCount > 2);
 }, [video.submission.description]);
 
 

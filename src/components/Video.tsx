@@ -228,6 +228,8 @@ const Video = ({
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
   const isPlaying = playingVideo === video.postId;
+  const [userPaused, setUserPaused] = useState(false);
+
   useEffect(() => {
     if (!videoRef.current) return;
     isPlaying
@@ -236,24 +238,26 @@ const Video = ({
   }, [isPlaying]);
 
   useEffect(() => {
-    const el = videoRef.current;
-    if (!el) return;
+  const el = videoRef.current;
+  if (!el) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && playingVideo !== el.id) {
-          el.play().catch(() => { });
-          setPlayingVideo(el.id);
-        }
-      },
-      {
-        threshold: 0.6,
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      // ⛔ nếu user đã pause thì KHÔNG auto play
+      if (userPaused) return;
+
+      if (entry.isIntersecting && playingVideo !== el.id) {
+        el.play().catch(() => {});
+        setPlayingVideo(el.id);
       }
-    );
+    },
+    { threshold: 0.6 }
+  );
 
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [playingVideo, setPlayingVideo]);
+  observer.observe(el);
+  return () => observer.disconnect();
+}, [playingVideo, setPlayingVideo, userPaused]);
+
 
   //  useEffect(() => {
   //   if (playingVideo === video.postId) {
@@ -285,15 +289,20 @@ const Video = ({
         />
 
         <div className="video-actions">
-          <button
-            onClick={() =>
-              setPlayingVideo(
-                playingVideo === video.postId ? null : video.postId
-              )
-            }
-          >
-            {isPlaying ? <IoMdPause /> : <IoMdPlay />}
-          </button>
+<button
+  onClick={() => {
+    if (isPlaying) {
+      setUserPaused(true);
+      setPlayingVideo(null);
+    } else {
+      setUserPaused(false);
+      setPlayingVideo(video.postId);
+    }
+  }}
+>
+  {isPlaying ? <IoMdPause /> : <IoMdPlay />}
+</button>
+
           <button onClick={() => setMute(!mute)}>
             {mute ? <IoMdVolumeOff /> : <IoMdVolumeHigh />}
           </button>

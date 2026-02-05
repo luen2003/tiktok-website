@@ -272,14 +272,28 @@ const Video = ({
   const [expanded, setExpanded] = useState(false);
   const descRef = useRef<HTMLParagraphElement>(null);
   const [canExpand, setCanExpand] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 768px)");
+
+    const handleChange = () => setIsMobile(mediaQuery.matches);
+
+    handleChange();
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
   useEffect(() => {
     setExpanded(false);
   }, [video.postId]);
 
   useEffect(() => {
     const text = video.submission.description || "";
-    setCanExpand(text.length >= 144);
-  }, [video.submission.description]);
+    const limit = isMobile ? 110 : 144;
+    setCanExpand(text.length >= limit);
+  }, [video.submission.description, isMobile]);
+
 
   useEffect(() => {
     if (!videoRef.current) return;

@@ -175,9 +175,16 @@ const Video = ({
   setPlayingVideo: React.Dispatch<React.SetStateAction<string | null>>;
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [play, setPlay] = useState(false);
+  // const [play, setPlay] = useState(false);
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
+  const isPlaying = playingVideo === video.postId;
+  useEffect(() => {
+    if (!videoRef.current) return;
+    isPlaying
+      ? videoRef.current.play()
+      : videoRef.current.pause();
+  }, [isPlaying]);
 
   useEffect(() => {
     const el = videoRef.current;
@@ -185,32 +192,30 @@ const Video = ({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setPlay(true);
+        if (entry.isIntersecting && playingVideo !== el.id) {
+          el.play().catch(() => { });
           setPlayingVideo(el.id);
-        } else {
-          setPlay(false);
         }
       },
-      { threshold: 0.6 }
+      {
+        threshold: 0.6,
+      }
     );
-
-   
-
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [setPlayingVideo]);
- useEffect(() => {
-  if (playingVideo === video.postId) {
-    setPlay(true);
-  } else {
-    setPlay(false);
-  }
-}, [playingVideo, video.postId]);
-  useEffect(() => {
-    play ? videoRef.current?.play() : videoRef.current?.pause();
-  }, [play]);
+  }, [playingVideo, setPlayingVideo]);
+
+  //  useEffect(() => {
+  //   if (playingVideo === video.postId) {
+  //     setPlay(true);
+  //   } else {
+  //     setPlay(false);
+  //   }
+  // }, [playingVideo, video.postId]);
+  // useEffect(() => {
+  //   play ? videoRef.current?.play() : videoRef.current?.pause();
+  // }, [play]);
 
   return (
     <VideoStyled>
@@ -223,12 +228,22 @@ const Video = ({
           muted={mute}
           loop
           playsInline
-          onClick={() => setPlay(!play)}
+          onClick={() =>
+            setPlayingVideo(
+              playingVideo === video.postId ? null : video.postId
+            )
+          }
         />
 
         <div className="video-actions">
-          <button onClick={() => setPlay(!play)}>
-            {play ? <IoMdPause /> : <IoMdPlay />}
+          <button
+            onClick={() =>
+              setPlayingVideo(
+                playingVideo === video.postId ? null : video.postId
+              )
+            }
+          >
+            {isPlaying ? <IoMdPause /> : <IoMdPlay />}
           </button>
           <button onClick={() => setMute(!mute)}>
             {mute ? <IoMdVolumeOff /> : <IoMdVolumeHigh />}

@@ -159,6 +159,55 @@ const VideoStyled = styled.div`
       }
     }
   }
+    .buttons {
+  button {
+    color: rgba(0, 0, 0, 0.9);
+  }
+&:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+}
+.buttons {
+  button {
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(4px);
+    color: white;
+  }
+
+  button:hover {
+    background: rgba(0, 0, 0, 0.9);
+  }
+}
+.buttons {
+  > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+
+    span {
+      min-width: 2rem;
+      height: 2rem;
+      padding: 0 0.5rem;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 0.7rem;
+      color: white;
+
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(4px);
+
+      border-radius: 999px;
+      line-height: 1;
+      user-select: none;
+    }
+  }
+}
+
 `;
 
 const Video = ({

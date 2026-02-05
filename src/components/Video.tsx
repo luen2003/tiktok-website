@@ -213,12 +213,12 @@ const VideoStyled = styled.div`
       margin-bottom: 0.25rem;
     }
 
-    .text {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
+  .text {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 
     &.expanded {
       max-height: 5rem; /* chiều cao cố định */
@@ -272,13 +272,25 @@ const Video = ({
   const [expanded, setExpanded] = useState(false);
   const descRef = useRef<HTMLParagraphElement>(null);
   const [canExpand, setCanExpand] = useState(false);
+useEffect(() => {
+  setExpanded(false);
+}, [video.postId]);
 
-  useEffect(() => {
-    const el = descRef.current;
-    if (!el) return;
+useEffect(() => {
+  const el = descRef.current;
+  if (!el) return;
 
-    setCanExpand(el.scrollHeight > el.clientHeight);
-  }, [video.submission.description]);
+  const range = document.createRange();
+  range.selectNodeContents(el);
+
+  const rects = range.getClientRects();
+
+  const lineCount = rects.length;
+
+  setCanExpand(lineCount >= 3);
+}, [video.submission.description]);
+
+
 
   useEffect(() => {
     if (!videoRef.current) return;

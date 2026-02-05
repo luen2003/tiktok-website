@@ -272,25 +272,14 @@ const Video = ({
   const [expanded, setExpanded] = useState(false);
   const descRef = useRef<HTMLParagraphElement>(null);
   const [canExpand, setCanExpand] = useState(false);
-useEffect(() => {
-  setExpanded(false);
-}, [video.postId]);
+  useEffect(() => {
+    setExpanded(false);
+  }, [video.postId]);
 
-useEffect(() => {
-  const el = descRef.current;
-  if (!el) return;
-
-  const range = document.createRange();
-  range.selectNodeContents(el);
-
-  const rects = range.getClientRects();
-
-  const lineCount = rects.length;
-
-  setCanExpand(lineCount > 2);
-}, [video.submission.description]);
-
-
+  useEffect(() => {
+    const text = video.submission.description || "";
+    setCanExpand(text.length >= 144);
+  }, [video.submission.description]);
 
   useEffect(() => {
     if (!videoRef.current) return;
